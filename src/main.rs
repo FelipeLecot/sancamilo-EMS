@@ -9,6 +9,12 @@ use axum::{
 use tower_http::services::ServeDir;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use std::sync::Arc;
+use std::clone::Clone;
+use mysql::Pool;
+
+mod db_handler;
+use db_handler::{establish_connection, execute_query, getOneUser};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -20,16 +26,36 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    info!("mysql pool...");
+
+    let pool = establish_connection().await?;
+
+    let shared_pool = Arc::new(pool);
+
     info!("initializing router...");
-    
+
     let assets_path = std::env::current_dir().unwrap();
 
+    let pool_clone = shared_pool.clone();
     let api_router = Router::new()
-    .route("/hello", get(hello_from_the_server));
+    .route("/hello", get(
+        move |_request: axum::http::Request<axum::body::Body>| {
+            async move {
+                hello_from_the_server(pool_clone).await
+            }
+        }
+    ));
+    
+    let pool_clone2 = shared_pool.clone();
     let router = Router::new()
-
     .nest("/api", api_router)
-    .route("/", get(hello))
+    .route("/", get(
+        move |_request: axum::http::Request<axum::body::Body>| {
+            async move {
+                hello(pool_clone2).await
+            }
+        }
+    ))
 
     .nest_service(        
         "/assets",        
@@ -48,18 +74,48 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn hello() -> impl IntoResponse {
-    let template = HelloTemplate {};
-    HtmlTemplate(template)
+async fn hello(pool: Arc<Pool>) -> impl IntoResponse {
+    match getOneUser(&pool).await {
+        Ok(rows) => {
+            let res: String = rows;
+            let template = HelloTemplate { name: res };
+            Ok(HtmlTemplate(template).into_response())
+        },
+        Err(err) => {
+            let template = ErrorTemplate { error: format!("Error: {:?}", err) };
+            Err(HtmlTemplate(template).into_response())
+        }
+    }
 }
 
-async fn hello_from_the_server() -> &'static str {"Hello!"}
+
+async fn hello_from_the_server(pool: Arc<Pool>) -> Html<String> {
+    match execute_query(&pool).await {
+        Ok(rows) => {
+            let res: String = rows.iter()
+            .map(|&(i, ref s)| format!("{} {}", i, s))
+            .collect::<Vec<String>>()
+            .join(", ");
+            Html(format!("{}", res))
+        },
+        Err(err) => {
+            Html(format!("Error executing query: {:?}", err))
+        }
+    }
+}
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct HelloTemplate;
-struct HtmlTemplate<T>(T);
+struct HelloTemplate {
+    name: String,
+}
+#[derive(Template)]
+#[template(path = "error.html")]
+struct ErrorTemplate {
+    error: String,
+}
 
+struct HtmlTemplate<T>(T);
 impl<T> IntoResponse for HtmlTemplate<T>
 where
     T: Template,
