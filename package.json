@@ -1,5 +1,5 @@
 {
-  "name": "demo-ecommerce",
+  "name": "sancamilo-ecm",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,6 +11,6 @@
   "devDependencies": {
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.5",
-    "tailwindcss": "^3.3.3"
+    "tailwindcss": "^3.4.3"
   }
 }

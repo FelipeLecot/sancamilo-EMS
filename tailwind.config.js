@@ -15,10 +15,10 @@ const { fontFamily } = require("tailwindcss/defaultTheme");
         padding: "1rem",
       },
       colors: {
-        'primary': '#e67852',
-        'secondary': '#4a3932',
-        'tertiary': '#1b9787',
-        'surface': '#444c4c'
+        'primary': '#729B79',
+        'secondary': '#475B63',
+        'white': '#F3E8EE',
+        'black': '#2E2C2F',
       }
     }
 	}
