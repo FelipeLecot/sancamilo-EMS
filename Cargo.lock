@@ -429,21 +429,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "demo-ecommerce"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "askama",
- "axum",
- "mysql",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "derive_utils"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1551,6 +1536,21 @@ name = "ryu"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ad4cc8da4ef723ed60bced201181d83791ad433213d8c24efffda1eec85d741"
+
+[[package]]
+name = "sancamilo-ecm"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "askama",
+ "axum",
+ "mysql",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "schannel"

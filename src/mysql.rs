@@ -11,7 +11,7 @@ async fn establish_connection() -> anyhow::Result<Pool> {
 async fn execute_query(pool: &Pool) -> anyhow::Result<()> {
     let mut conn = pool.get_conn()?;
     
-    let query = "SELECT * FROM your_table";
+    let query = "SELECT * FROM dxts_users LIMIT 1;";
     
     let rows = conn.query_map(query, |(id, name): (i32, String)| (id, name))?;
     
